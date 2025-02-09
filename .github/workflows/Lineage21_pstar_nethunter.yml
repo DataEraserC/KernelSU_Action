@@ -69,6 +69,7 @@ jobs:
             Remove_Kernel_Validation
             Backport_path_umount
             Backport_cred_commit_required_by_kernelsu
+            Backport_rename_strncpy_from_unsafe_user_required_by_kernelsu
             Remove_Warning
             Docker_LXC_Patches
             Remove_ANDROID_PARANOID_NETWORK
@@ -463,6 +464,13 @@ jobs:
         patch -p1 < kernel_patches/patches/${{ env.Kernel_Extra_Version }}/module.patch
         #https://blog.xzr.moe/archives/236/
         #disable CONFIG_MODVERSIONS is useless
+
+    - name: Backport rename strncpy_from_unsafe_user commit required by kernelsu
+      if: env.Backport_rename_strncpy_from_unsafe_user_required_by_kernelsu == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+        echo "------------ Patches for backport rename strncpy_from_unsafe_user commit required by kernelsu ----------------------------------------------------"
+        git apply kernel_patches/patches/${{ env.Kernel_Extra_Version }}/0001-BACKPORT-maccess-rename-strncpy_from_unsafe_user-to-.patch
 
     - name: Backport cred commit required by kernelsu
       if: env.Backport_cred_commit_required_by_kernelsu == 'true'

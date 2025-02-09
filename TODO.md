@@ -1,1 +1,2 @@
-Not to create a docker defconfig but use other clean way like patches or import from gist
+- [x] Not to create a docker defconfig but use other clean way like patches or import from gist
+- [ ] make scripts for every .env which contains the way to patch kernel source
