@@ -513,15 +513,25 @@ jobs:
         KSU_VERSION=$(cd KernelSU* && expr $(/usr/bin/git rev-list --count HEAD) + 10200)
         echo "UPLOADNAME=-KernelSU_$KSU_VERSION" >> $GITHUB_ENV
 
-    - name: Setup susfs4ksu
+    - name: Check susfs4ksu for kernel
+      if: env.ENABLE_susfs4ksu == 'false' && env.IF_KernelSU_CONTAIN_SUSFS == 'true'
+      run: |
+        echo "::error::SUSFS4KSU is not enabled, but KernelSU contains SUSFS. This step cannot proceed."
+        exit 1
+
+    - name: Setup susfs4ksu for kernel
       if: env.ENABLE_susfs4ksu == 'true' && env.KERNELSU_LKM != 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         patch -p1 < $GITHUB_WORKSPACE/kernel_workspace/android-kernel/kernel_patches/patches/${{ env.Kernel_Extra_Version }}/50_add_susfs_in_kernel-${{ env.Kernel_Version }}.patch
-        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/KernelSU
-        patch -p1 < $GITHUB_WORKSPACE/kernel_workspace/android-kernel/kernel_patches/patches/${{ env.Kernel_Extra_Version }}/10_enable_susfs_for_ksu.patch
         cp $GITHUB_WORKSPACE/kernel_workspace/android-kernel/susfs4ksu/kernel_patches/fs/* $GITHUB_WORKSPACE/kernel_workspace/android-kernel/fs/
         cp $GITHUB_WORKSPACE/kernel_workspace/android-kernel/susfs4ksu/kernel_patches/include/linux/* $GITHUB_WORKSPACE/kernel_workspace/android-kernel/include/linux/
+
+    - name: Setup susfs4ksu for KernelSU
+      if: env.ENABLE_susfs4ksu == 'true' && env.IF_KernelSU_CONTAIN_SUSFS == 'false' && env.KERNELSU_LKM != 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/KernelSU
+        patch -p1 < $GITHUB_WORKSPACE/kernel_workspace/android-kernel/kernel_patches/patches/${{ env.Kernel_Extra_Version }}/10_enable_susfs_for_ksu.patch
 
     - name: Setup susfs4ksu workaround
       if: env.ENABLE_susfs4ksu == 'true' && env.APPLY_KSU_PATCH == 'true' && env.KERNELSU_LKM != 'true'
